@@ -1,0 +1,28 @@
+<h2>Departamentos</h2>
+
+<form [formGroup]="form" (ngSubmit)="crear()" class="card">
+  <div class="row">
+    <label>Nombre *</label>
+    <input formControlName="nombre" placeholder="Ej: Evaluación Técnica" />
+    <small *ngIf="form.controls.nombre.touched && form.controls.nombre.invalid">
+      El nombre es obligatorio (máx. 120).
+    </small>
+  </div>
+
+  <div class="row">
+    <label>Descripción</label>
+    <input formControlName="descripcion" placeholder="Descripción (opcional)" />
+  </div>
+
+  <button type="submit" [disabled]="form.invalid">Crear</button>
+</form>
+
+<div *ngIf="cargando">Cargando...</div>
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<ul>
+  <li *ngFor="let dep of departamentos">
+    <strong>{{ dep.nombre }}</strong>
+    <span *ngIf="dep.descripcion"> — {{ dep.descripcion }}</span>
+  </li>
+</ul>

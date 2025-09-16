@@ -8,6 +8,10 @@
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
+        },
+        "@schematics/angular:service": {
+          "type": "service",
+          "skipTests": true
         }
       },
       "root": "",
@@ -96,3 +100,4 @@
     }
   }
 }
+
