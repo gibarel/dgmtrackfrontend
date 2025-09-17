@@ -1,28 +1,47 @@
-<h2>Departamentos</h2>
+<div class="wrap">
+  <h2>Departamentos</h2>
 
-<form [formGroup]="form" (ngSubmit)="crear()" class="card">
-  <div class="row">
-    <label>Nombre *</label>
-    <input formControlName="nombre" placeholder="Ej: Evaluación Técnica" />
-    <small *ngIf="form.controls.nombre.touched && form.controls.nombre.invalid">
-      El nombre es obligatorio (máx. 120).
-    </small>
-  </div>
+  <form [formGroup]="form" (ngSubmit)="crear()" class="card">
+    <div class="row">
+      <label>Nombre *</label>
+      <input class="input" formControlName="nombre" placeholder="Ej: Evaluación Técnica" />
+      <small *ngIf="form.controls['nombre']?.touched && form.controls['nombre']?.invalid">
+        Nombre obligatorio (máx. 120).
+      </small>
+    </div>
 
-  <div class="row">
-    <label>Descripción</label>
-    <input formControlName="descripcion" placeholder="Descripción (opcional)" />
-  </div>
+    <div class="row">
+      <label>Descripción</label>
+      <input class="input" formControlName="descripcion" placeholder="Descripción (opcional)" />
+    </div>
 
-  <button type="submit" [disabled]="form.invalid">Crear</button>
-</form>
+    <button class="btn primary" type="submit" [disabled]="form.invalid">Crear</button>
+  </form>
 
-<div *ngIf="cargando">Cargando...</div>
-<div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="cargando">Cargando...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
 
-<ul>
-  <li *ngFor="let dep of departamentos">
-    <strong>{{ dep.nombre }}</strong>
-    <span *ngIf="dep.descripcion"> — {{ dep.descripcion }}</span>
-  </li>
-</ul>
+  <ul class="lista">
+    <li *ngFor="let dep of departamentos">
+      <div class="item">
+        <div class="info">
+          <strong>{{ dep.nombre }}</strong>
+          <span *ngIf="dep.descripcion"> — {{ dep.descripcion }}</span>
+        </div>
+        <div class="actions" *ngIf="editId !== dep.id; else editTpl">
+          <button class="btn" (click)="startEdit(dep)">Editar</button>
+          <button class="btn danger" (click)="eliminar(dep.id)">Eliminar</button>
+        </div>
+      </div>
+
+      <ng-template #editTpl>
+        <form [formGroup]="editForm" (ngSubmit)="guardarEdit(dep.id)" class="inline-edit">
+          <input class="input sm" formControlName="nombre" placeholder="Nombre" />
+          <input class="input sm" formControlName="descripcion" placeholder="Descripción" />
+          <button class="btn primary sm" type="submit" [disabled]="editForm.invalid">Guardar</button>
+          <button class="btn sm" type="button" (click)="cancelarEdit()">Cancelar</button>
+        </form>
+      </ng-template>
+    </li>
+  </ul>
+</div>
