@@ -1,21 +1,18 @@
+// src/app/departamentos/departamentos.ts
 import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DepartamentosService, Departamento } from '../servicios/departamentos.service';
 
-// Si querés incluir gráfico ahora mismo, instalá ng2-charts y chart.js y descomentá:
-// import { NgChartsModule } from 'ng2-charts';
-// import { ChartConfiguration, ChartType } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
+import { ChartConfiguration } from 'chart.js';
+import { Chart, registerables } from 'chart.js';   // registra Chart.js localmente
+Chart.register(...registerables);                  // línea clave
 
 @Component({
   selector: 'app-departamentos',
   standalone: true,
-  imports: [
-    NgFor,
-    NgIf,
-    ReactiveFormsModule,
-    // NgChartsModule, // ← descomentá si vas a usar gráficos ahora
-  ],
+  imports: [NgFor, NgIf, ReactiveFormsModule, NgChartsModule],
   templateUrl: './departamentos.html',
   styleUrl: './departamentos.scss',
 })
@@ -24,15 +21,14 @@ export class DepartamentosComponent implements OnInit {
   cargando = false;
   error?: string;
 
-  // formularios
   form: ReturnType<FormBuilder['group']>;
   editForm: ReturnType<FormBuilder['group']>;
   editId: number | null = null;
 
-  // Si usás gráfico, descomentá las 3 líneas siguientes y los imports de arriba:
-  // barData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [{ data: [] }] };
-  // barOptions: ChartConfiguration<'bar'>['options'] = { responsive: true };
-  // barType: ChartType = 'bar';
+  // Datos del gráfico (no tipamos con 'bar' para evitar choques)
+  barData: ChartConfiguration['data'] = { labels: [], datasets: [{ data: [] }] };
+  barOptions: ChartConfiguration['options'] = { responsive: true };
+  // barType ya no es necesario; usaremos 'bar' literal en el template
 
   constructor(private fb: FormBuilder, private svc: DepartamentosService) {
     this.form = this.fb.group({
@@ -50,16 +46,16 @@ export class DepartamentosComponent implements OnInit {
   cargarLista() {
     this.cargando = true; this.error = undefined;
     this.svc.getDepartamentos().subscribe({
-      next: data => { this.departamentos = data; /* this.recomputarChart(); */ this.cargando = false; },
-      error: err => { this.error = 'No se pudo cargar la lista.'; this.cargando = false; console.error(err); }
+      next: (data) => { this.departamentos = data; this.recomputarChart(); this.cargando = false; },
+      error: (err) => { this.error = 'No se pudo cargar la lista.'; this.cargando = false; console.error(err); },
     });
   }
 
   crear() {
     if (this.form.invalid) return;
     this.svc.createDepartamento(this.form.value as any).subscribe({
-      next: nuevo => { this.departamentos = [nuevo, ...this.departamentos]; /* this.recomputarChart(); */ this.form.reset(); },
-      error: err => { this.error = 'No se pudo crear.'; console.error(err); }
+      next: (nuevo) => { this.departamentos = [nuevo, ...this.departamentos]; this.recomputarChart(); this.form.reset(); },
+      error: (err) => { this.error = 'No se pudo crear.'; console.error(err); },
     });
   }
 
@@ -73,30 +69,30 @@ export class DepartamentosComponent implements OnInit {
   guardarEdit(id: number) {
     if (this.editForm.invalid) return;
     this.svc.updateDepartamento(id, this.editForm.value as any).subscribe({
-      next: actualizado => {
+      next: (actualizado) => {
         this.departamentos = this.departamentos.map(d => d.id === id ? actualizado : d);
-        /* this.recomputarChart(); */ this.cancelarEdit();
+        this.recomputarChart();
+        this.cancelarEdit();
       },
-      error: err => { this.error = 'No se pudo actualizar.'; console.error(err); }
+      error: (err) => { this.error = 'No se pudo actualizar.'; console.error(err); },
     });
   }
 
   eliminar(id: number) {
     if (!confirm('¿Eliminar este departamento?')) return;
     this.svc.deleteDepartamento(id).subscribe({
-      next: () => { this.departamentos = this.departamentos.filter(d => d.id !== id); /* this.recomputarChart(); */ },
-      error: err => { this.error = 'No se pudo eliminar.'; console.error(err); }
+      next: () => { this.departamentos = this.departamentos.filter(d => d.id !== id); this.recomputarChart(); },
+      error: (err) => { this.error = 'No se pudo eliminar.'; console.error(err); },
     });
   }
 
-  // Si usás gráfico:
-  // private recomputarChart() {
-  //   const map: Record<string, number> = {};
-  //   for (const d of this.departamentos) {
-  //     const k = (d.nombre?.[0] || '#').toUpperCase();
-  //     map[k] = (map[k] ?? 0) + 1;
-  //   }
-  //   const labels = Object.keys(map).sort();
-  //   this.barData = { labels, datasets: [{ data: labels.map(l => map[l]) }] };
-  // }
+  private recomputarChart() {
+    const map: Record<string, number> = {};
+    for (const d of this.departamentos) {
+      const k = (d.nombre?.[0] || '#').toUpperCase();
+      map[k] = (map[k] ?? 0) + 1;
+    }
+    const labels = Object.keys(map).sort();
+    this.barData = { labels, datasets: [{ data: labels.map(l => map[l]) }] };
+  }
 }

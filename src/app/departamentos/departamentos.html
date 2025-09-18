@@ -1,6 +1,16 @@
 <div class="wrap">
   <h2>Departamentos</h2>
 
+  <!-- Gráfico -->
+  <div style="max-width: 600px; margin: 1rem 0;">
+    <canvas
+      baseChart
+      [type]="'bar'"
+      [data]="barData"
+      [options]="barOptions">
+    </canvas>
+  </div>
+
   <form [formGroup]="form" (ngSubmit)="crear()" class="card">
     <div class="row">
       <label>Nombre *</label>
