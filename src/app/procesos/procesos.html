@@ -1,9 +1,43 @@
 <div class="wrap">
   <h2>Procesos</h2>
 
+  <!-- FORMULARIO ALTA -->
   <form [formGroup]="form" (ngSubmit)="crear()" class="card">
-    <div class="row"><label>Nombre *</label><input class="input" formControlName="nombre" /></div>
-    <div class="row"><label>Descripción</label><input class="input" formControlName="descripcion" /></div>
+    <div class="row">
+      <label>N° Expediente</label>
+      <input class="input" formControlName="numeroExpediente" />
+    </div>
+
+    <div class="row">
+      <label>Tipo de acto</label>
+      <input class="input" formControlName="tipoActo" />
+    </div>
+
+    <div class="row">
+      <label>Caso / Programa</label>
+      <input class="input" formControlName="caso" placeholder="CASCOS, UNIMOG, etc." />
+    </div>
+
+    <div class="row">
+      <label>Nombre *</label>
+      <input class="input" formControlName="nombre" />
+    </div>
+
+    <div class="row">
+      <label>Descripción</label>
+      <input class="input" formControlName="descripcion" />
+    </div>
+
+    <div class="row">
+      <label>Situación actual</label>
+      <textarea class="input" rows="2" formControlName="situacionActual"></textarea>
+    </div>
+
+    <div class="row">
+      <label>Puntos principales a considerar</label>
+      <textarea class="input" rows="3" formControlName="puntosPrincipales"></textarea>
+    </div>
+
     <div class="row">
       <label>Estado</label>
       <select class="input" formControlName="estado">
@@ -13,62 +47,129 @@
         <option value="cancelado">Cancelado</option>
       </select>
     </div>
-    <div class="row"><label>Días estimados</label><input class="input" type="number" formControlName="diasEstimados" /></div>
-    <div class="row"><label>Monto previsto</label><input class="input" type="number" formControlName="montoPrevisto" /></div>
+
+    <div class="row">
+      <label>Días estimados</label>
+      <input class="input" type="number" formControlName="diasEstimados" />
+    </div>
+
+    <div class="row">
+      <label>Monto previsto</label>
+      <input class="input" type="number" formControlName="montoPrevisto" />
+    </div>
 
     <div class="row">
       <label>Dependencias</label>
       <div class="checkboxes">
         <label *ngFor="let d of dependencias">
-          <input type="checkbox" [checked]="seleccionadas.has(d.id)" (change)="toggleDep(d.id, $event.target.checked)" />
+          <input
+            type="checkbox"
+            [checked]="seleccionadas.has(d.id)"
+            (change)="toggleDep(d.id, $event.target.checked)"
+          />
           {{ d.nombre }}
         </label>
       </div>
     </div>
 
-    <button class="btn primary" type="submit" [disabled]="form.invalid">Crear</button>
+    <button class="btn primary" type="submit" [disabled]="form.invalid">
+      Crear
+    </button>
   </form>
 
   <div *ngIf="cargando">Cargando...</div>
   <div *ngIf="error" class="error">{{ error }}</div>
 
+  <!-- LISTA -->
   <ul class="lista">
     <li *ngFor="let p of procesos">
       <div class="item" *ngIf="editId !== p.id; else editTpl">
+        <!-- LINEA SUPERIOR -->
+        <div class="meta">
+          <strong *ngIf="p.numeroExpediente">Expte: {{ p.numeroExpediente }}</strong>
+          <span *ngIf="p.tipoActo"> · {{ p.tipoActo }}</span>
+          <span *ngIf="p.caso"> · {{ p.caso }}</span>
+        </div>
+
         <div class="info">
-          <strong>{{ p.nombre }}</strong>
+          <strong>
+            <a [routerLink]="['/procesos', p.id]">
+              {{ p.nombre }}
+            </a>
+          </strong>
           <span *ngIf="p.descripcion"> — {{ p.descripcion }}</span>
           <em> · {{ p.estado }}</em>
+
+          <div class="subinfo" *ngIf="p.situacionActual">
+            <small><strong>Situación actual:</strong> {{ p.situacionActual }}</small>
+          </div>
+
+          <div class="subinfo muted" *ngIf="p.puntosPrincipales">
+            <small>{{ p.puntosPrincipales }}</small>
+          </div>
+
           <div class="chips" *ngIf="p.dependencias?.length">
             <span class="chip" *ngFor="let d of p.dependencias">{{ d.nombre }}</span>
           </div>
         </div>
+
         <div class="actions">
           <button class="btn" (click)="startEdit(p)">Editar</button>
           <button class="btn danger" (click)="eliminar(p.id)">Eliminar</button>
         </div>
       </div>
 
+      <!-- EDICIÓN INLINE -->
       <ng-template #editTpl>
         <form [formGroup]="editForm" (ngSubmit)="guardar()" class="inline-edit">
+          <input class="input sm" formControlName="numeroExpediente" placeholder="N° Expte" />
+          <input class="input sm" formControlName="tipoActo" placeholder="Tipo acto" />
+          <input class="input sm" formControlName="caso" placeholder="Caso" />
           <input class="input sm" formControlName="nombre" />
           <input class="input sm" formControlName="descripcion" />
+
+          <textarea
+            class="input sm"
+            rows="2"
+            formControlName="situacionActual"
+            placeholder="Situación actual"
+          ></textarea>
+
+          <textarea
+            class="input sm"
+            rows="3"
+            formControlName="puntosPrincipales"
+            placeholder="Puntos principales"
+          ></textarea>
+
           <select class="input sm" formControlName="estado">
             <option value="pendiente">Pendiente</option>
             <option value="en_progreso">En progreso</option>
             <option value="finalizado">Finalizado</option>
             <option value="cancelado">Cancelado</option>
           </select>
+
           <input class="input sm" type="number" formControlName="diasEstimados" placeholder="Días" />
           <input class="input sm" type="number" formControlName="montoPrevisto" placeholder="Monto" />
+
           <div class="checkboxes sm">
             <label *ngFor="let d of dependencias">
-              <input type="checkbox" [checked]="seleccionadas.has(d.id)" (change)="toggleDep(d.id, $event.target.checked)" />
+              <input
+                type="checkbox"
+                [checked]="seleccionadas.has(d.id)"
+                (change)="toggleDep(d.id, $event.target.checked)"
+              />
               {{ d.nombre }}
             </label>
           </div>
-          <label><input type="checkbox" formControlName="activo" /> Activo</label>
-          <button class="btn primary sm" type="submit" [disabled]="editForm.invalid">Guardar</button>
+
+          <label>
+            <input type="checkbox" formControlName="activo" /> Activo
+          </label>
+
+          <button class="btn primary sm" type="submit" [disabled]="editForm.invalid">
+            Guardar
+          </button>
           <button class="btn sm" type="button" (click)="cancelar()">Cancelar</button>
         </form>
       </ng-template>

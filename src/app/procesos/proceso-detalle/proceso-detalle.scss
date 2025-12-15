@@ -1,0 +1,66 @@
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 6px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.header .left { flex: 1; }
+.header .right { display: flex; gap: 8px; align-items: flex-start; }
+
+.title { margin: 0; font-size: 1.5rem; }
+
+.meta,
+.meta2 {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.section { margin-top: 18px; }
+
+.section h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  color: #333;
+}
+
+.text { margin: 0; line-height: 1.45; }
+.muted { color: #666; }
+
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  background: #ccc;
+  color: #222;
+}
+
+.badge.warn { background: #ffca28; color: #222; }
+.badge.ok { background: #4caf50; color: #fff; }
+.badge.danger { background: #e53935; color: #fff; }
+.badge.muted { background: #bdbdbd; color: #333; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  background: #e0e0e0;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}

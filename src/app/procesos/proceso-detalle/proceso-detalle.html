@@ -1,0 +1,54 @@
+<div class="wrap">
+  <div *ngIf="cargando">Cargando proceso...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="proceso" class="card">
+    <div class="header">
+      <div class="left">
+        <h2 class="title">{{ proceso.nombre }}</h2>
+
+        <div class="meta">
+          <span *ngIf="proceso.numeroExpediente"><strong>Expte:</strong> {{ proceso.numeroExpediente }}</span>
+          <span *ngIf="proceso.tipoActo"> · <strong>Tipo:</strong> {{ proceso.tipoActo }}</span>
+          <span *ngIf="proceso.caso"> · <strong>Caso:</strong> {{ proceso.caso }}</span>
+        </div>
+
+        <div class="meta2">
+          <span [class]="badgeClass(proceso.estado)">
+            {{ estadoLabel(proceso.estado) }}
+          </span>
+
+          <span *ngIf="proceso.activo === false" class="badge muted">Inactivo</span>
+        </div>
+      </div>
+
+      <div class="right">
+        <button class="btn sm" type="button" (click)="volver()">← Volver</button>
+        
+      </div>
+    </div>
+
+    <div class="section" *ngIf="proceso.situacionActual">
+      <h3>Situación actual</h3>
+      <p class="text">{{ proceso.situacionActual }}</p>
+    </div>
+
+    <div class="section" *ngIf="proceso.puntosPrincipales">
+      <h3>Puntos principales a considerar</h3>
+      <p class="text muted">{{ proceso.puntosPrincipales }}</p>
+    </div>
+
+    <div class="section" *ngIf="proceso.dependencias?.length">
+      <h3>Dependencias</h3>
+      <div class="chips">
+        <span class="chip" *ngFor="let d of proceso.dependencias">{{ d.nombre }}</span>
+      </div>
+    </div>
+
+    <!-- Próximo bloque: requisitos (Paso C) -->
+    <div class="section">
+      <h3>Requisitos</h3>
+      <p class="muted">Pendiente de implementar (Paso C).</p>
+    </div>
+  </div>
+</div>
