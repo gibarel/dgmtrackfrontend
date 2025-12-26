@@ -1,36 +1,179 @@
-.wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
-.topbar { display:flex; align-items:center; gap:12px; }
-.card { background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:16px; margin-top:12px; }
-.error { color:#b00020; margin-top:8px; }
-.muted { color:#666; }
-.one-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hdr { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
-.hdr2 { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.meta { margin-top:6px; color:#444; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-.avance { text-align:right; min-width: 160px; }
-.avance .pct { font-size: 28px; font-weight: 700; }
-.avance .small { color:#666; font-size: 12px; }
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
 
-.new-req { display:flex; gap:10px; align-items:center; }
-.new-req .input { min-width: 420px; }
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
 
-.tabla { width:100%; border-collapse:collapse; margin-top:12px; }
-.tabla th, .tabla td { border-top:1px solid #eee; padding:10px; vertical-align:top; }
-.tabla th { text-align:left; color:#444; font-weight:600; }
-.num { width:52px; color:#444; }
-.center { text-align:center; width:70px; }
-.actions { width:110px; text-align:right; }
-.desc { max-width: 420px; }
+h2 { margin: 0; }
 
-.input { width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:8px; }
-.input.sm { padding:6px 8px; border-radius:8px; font-size: 13px; }
+.card {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.03);
+  margin-bottom: 14px;
+}
 
-.btn { border:1px solid #ddd; background:#f7f7f7; padding:8px 10px; border-radius:8px; cursor:pointer; }
-.btn.sm { padding:6px 8px; font-size: 12px; }
-.btn.primary { background:#1f6feb; border-color:#1f6feb; color:#fff; }
-.btn.danger { background:#d93025; border-color:#d93025; color:#fff; }
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
 
-.badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; background:#eee; }
-.badge.warn { background:#fff3cd; }
-.badge.ok { background:#d1e7dd; }
-.badge.danger { background:#f8d7da; }
+.meta {
+  color: #555;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.badge {
+  margin-left: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #efefef;
+  font-size: 12px;
+}
+
+.badge.ok { background: #e7f7ea; color: #1b7a2a; }
+.badge.warn { background: #fff5df; color: #8a5a00; }
+.badge.bad { background: #fde7e7; color: #b12222; }
+
+.avance {
+  text-align: right;
+}
+.pct {
+  font-size: 28px;
+  font-weight: 800;
+}
+.small {
+  font-size: 12px;
+  color: #666;
+}
+
+.block {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+.label {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.text {
+  color: #333;
+  font-size: 14px;
+}
+.text.small {
+  font-size: 13px;
+  color: #555;
+}
+
+.row.between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.row.add {
+  margin-top: 10px;
+}
+
+.inline {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+.inline .input { flex: 1; }
+
+.tablewrap {
+  margin-top: 12px;
+  overflow: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 860px;
+}
+
+.tabla th, .tabla td {
+  border-top: 1px solid #eee;
+  padding: 10px 10px;
+  vertical-align: top;
+}
+
+.tabla thead th {
+  border-top: none;
+  font-size: 13px;
+  color: #555;
+  text-align: left;
+}
+
+.desc {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d8d8d8;
+}
+
+.input.sm {
+  padding: 7px 8px;
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #d0d0d0;
+  background: #f7f7f7;
+  cursor: pointer;
+}
+
+.btn.sm {
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+.btn.primary {
+  background: #2f5cf3;
+  border-color: #2f5cf3;
+  color: #fff;
+}
+
+.btn.danger {
+  background: #d62c2c;
+  border-color: #d62c2c;
+  color: #fff;
+}
+
+.muted {
+  color: #777;
+  text-align: center;
+  padding: 18px 10px;
+}
+
+.error {
+  color: #b00020;
+  margin: 10px 0;
+}

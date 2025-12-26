@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
 import { ProcesosService, Proceso } from '../../servicios/procesos.service';
 import { RequisitosService, RequisitoProceso, EstadoRequisito } from '../../servicios/requisitos.service';
+import { PlantillasService, Plantilla } from '../../servicios/plantillas.service';
 
 @Component({
   selector: 'app-proceso-detalle',
@@ -14,216 +15,220 @@ import { RequisitosService, RequisitoProceso, EstadoRequisito } from '../../serv
   styleUrls: ['./proceso-detalle.scss'],
 })
 export class ProcesoDetalleComponent implements OnInit {
-  proceso?: Proceso;
-  requisitos: RequisitoProceso[] = [];
-
-  // Campos extendidos (evita "as any" en template)
-  caso?: string | null;
-  situacionActual?: string | null;
-  puntosPrincipales?: string | null;
-
-  cargando = true;
-  cargandoReq = true;
-  error?: string;
-  errorReq?: string;
-
   id!: number;
 
-  nuevoReqForm!: ReturnType<FormBuilder['group']>;
+  proceso?: Proceso;
+  requisitos: RequisitoProceso[] = [];
+  plantillas: Plantilla[] = [];
+
+  cargando = false;
+  error?: string;
+
+  // Para mostrar datos auxiliares del proceso
+  caso?: string;
+  situacionActual?: string;
+  puntosPrincipales?: string;
+
+  // Progreso
+  avancePct = 0;
+  completos = 0;
+  totalAplicables = 0;
+
+  // Selección plantilla (sin ngModel)
+  plantillaSeleccionada = '';
+
+  // Alta rápida de requisito
+  nuevoReqForm: ReturnType<FormBuilder['group']>;
+
+  readonly estados: { value: EstadoRequisito; label: string }[] = [
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'en_gestion', label: 'En gestión' },
+    { value: 'completo', label: 'Completo' },
+    { value: 'no_aplica', label: 'No aplica' },
+  ];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private procesosService: ProcesosService,
-    private reqService: RequisitosService,
     private fb: FormBuilder,
+    private procesosService: ProcesosService,
+    private requisitosService: RequisitosService,
+    private plantillasService: PlantillasService,
   ) {
-    // Crear el form ACÁ (evita "fb used before initialization")
     this.nuevoReqForm = this.fb.group({
-      descripcion: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(400)]),
+      descripcion: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(500)]),
     });
   }
 
   ngOnInit(): void {
-    const raw = this.route.snapshot.paramMap.get('id');
-    const id = Number(raw);
-
-    if (!id || Number.isNaN(id)) {
-      this.router.navigate(['/procesos']);
-      return;
-    }
-
-    this.id = id;
-    this.cargarProceso();
-    this.cargarRequisitos();
+    this.id = Number(this.route.snapshot.paramMap.get('id'));
+    this.cargarTodo();
   }
 
-  cargarProceso(): void {
-    this.cargando = true;
-    this.error = undefined;
-
-    this.procesosService.getById(this.id).subscribe({
-      next: (p: any) => {
-        this.proceso = p;
-        // mapear campos extendidos para el template
-        this.caso = p?.caso ?? null;
-        this.situacionActual = p?.situacionActual ?? null;
-        this.puntosPrincipales = p?.puntosPrincipales ?? null;
-        this.cargando = false;
-      },
-      error: () => {
-        this.error = 'No se pudo cargar el proceso';
-        this.cargando = false;
-      },
-    });
-  }
-
-  cargarRequisitos(): void {
-    this.cargandoReq = true;
-    this.errorReq = undefined;
-
-    this.reqService.listByProceso(this.id).subscribe({
-      next: (rs) => {
-        this.requisitos = rs;
-        this.cargandoReq = false;
-      },
-      error: (e) => {
-        this.errorReq = 'No se pudieron cargar los requisitos';
-        this.cargandoReq = false;
-        console.error(e);
-      },
-    });
-  }
-
-  crearRequisito(): void {
-    if (this.nuevoReqForm.invalid) return;
-
-    const descripcion = this.nuevoReqForm.get('descripcion')?.value ?? '';
-    this.reqService.createForProceso(this.id, { descripcion }).subscribe({
-      next: (r) => {
-        this.requisitos = [...this.requisitos, r].sort((a, b) => a.orden - b.orden);
-        this.nuevoReqForm.reset({ descripcion: '' });
-      },
-      error: (e) => {
-        this.errorReq = 'No se pudo crear el requisito';
-        console.error(e);
-      },
-    });
-  }
-
-  setEstado(r: RequisitoProceso, estado: string): void {
-    this.reqService.updateEstado(r.id, estado as EstadoRequisito).subscribe({
-      next: (upd) => {
-        this.requisitos = this.requisitos.map((x) => (x.id === r.id ? upd : x));
-      },
-      error: (e) => {
-        this.errorReq = 'No se pudo actualizar el estado';
-        console.error(e);
-      },
-    });
-  }
-
-  toggleAplica(r: RequisitoProceso, aplica: boolean): void {
-  const nextEstado =
-    aplica && r.estado === 'no_aplica' ? 'pendiente' : (aplica ? r.estado : 'no_aplica');
-
-  const payload: Partial<RequisitoProceso> = {
-    aplica,
-    estado: nextEstado,
-  };
-
-  this.reqService.update(r.id, payload).subscribe({
-    next: (upd) => {
-      this.requisitos = this.requisitos.map((x) => (x.id === r.id ? upd : x));
-    },
-    error: (e) => {
-      this.errorReq = 'No se pudo actualizar';
-      console.error(e);
-    },
-  });
-
-
-
-    this.reqService.update(r.id, payload).subscribe({
-      next: (upd) => {
-        this.requisitos = this.requisitos.map((x) => (x.id === r.id ? upd : x));
-      },
-      error: (e) => {
-        this.errorReq = 'No se pudo actualizar';
-        console.error(e);
-      },
-    });
-  }
-
-  guardarTexto(r: RequisitoProceso, responsableTexto: string, observaciones: string): void {
-    this.reqService.update(r.id, { responsableTexto, observaciones }).subscribe({
-      next: (upd) => {
-        this.requisitos = this.requisitos.map((x) => (x.id === r.id ? upd : x));
-      },
-      error: (e) => {
-        this.errorReq = 'No se pudo guardar';
-        console.error(e);
-      },
-    });
-  }
-
-  eliminarRequisito(r: RequisitoProceso): void {
-    if (!confirm(`¿Eliminar requisito #${r.orden}?`)) return;
-    this.reqService.delete(r.id).subscribe({
-      next: () => {
-        this.requisitos = this.requisitos.filter((x) => x.id !== r.id);
-      },
-      error: (e) => {
-        this.errorReq = 'No se pudo eliminar';
-        console.error(e);
-      },
-    });
-  }
-
-  get totalAplicables(): number {
-    return this.requisitos.filter((r) => r.aplica).length;
-  }
-
-  get completos(): number {
-    return this.requisitos.filter((r) => r.aplica && r.estado === 'completo').length;
-  }
-
-  get avancePct(): number {
-    const t = this.totalAplicables;
-    if (!t) return 0;
-    return Math.round((this.completos / t) * 100);
-  }
-
-  volver(): void {
+  volver() {
     this.router.navigate(['/procesos']);
   }
 
-  badgeClass(estado?: string): string {
+  cargarTodo() {
+    this.cargando = true;
+    this.error = undefined;
+
+    // 1) Proceso
+    this.procesosService.getById(this.id).subscribe({
+      next: (p) => {
+        this.proceso = p;
+        this.caso = (p as any).caso ?? undefined;
+        this.situacionActual = (p as any).situacionActual ?? undefined;
+        this.puntosPrincipales = (p as any).puntosPrincipales ?? undefined;
+
+        // 2) Requisitos
+        this.cargarRequisitos();
+
+        // 3) Plantillas (para aplicar)
+        this.plantillasService.list().subscribe({
+          next: (pls) => (this.plantillas = pls || []),
+          error: (e) => console.warn('No se pudieron cargar plantillas', e),
+        });
+      },
+      error: (e) => {
+        this.error = 'No se pudo cargar el proceso.';
+        this.cargando = false;
+        console.error(e);
+      },
+    });
+  }
+
+  cargarRequisitos() {
+    this.requisitosService.getByProceso(this.id).subscribe({
+      next: (items) => {
+        this.requisitos = (items || []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+        this.recalcularAvance();
+        this.cargando = false;
+      },
+      error: (e) => {
+        this.error = 'No se pudieron cargar los requisitos.';
+        this.cargando = false;
+        console.error(e);
+      },
+    });
+  }
+
+  recalcularAvance() {
+    const aplicables = this.requisitos.filter((r) => r.aplica !== false);
+    this.totalAplicables = aplicables.length;
+    this.completos = aplicables.filter((r) => r.estado === 'completo').length;
+    this.avancePct = this.totalAplicables ? Math.round((this.completos / this.totalAplicables) * 100) : 0;
+  }
+
+  // UI helpers
+  estadoLabel(estado?: string) {
     switch (estado) {
-      case 'pendiente': return 'badge';
-      case 'en_progreso': return 'badge warn';
-      case 'finalizado': return 'badge ok';
-      case 'cancelado': return 'badge danger';
-      default: return 'badge';
+      case 'pendiente':
+        return 'Pendiente';
+      case 'en_progreso':
+        return 'En progreso';
+      case 'finalizado':
+        return 'Finalizado';
+      case 'cancelado':
+        return 'Cancelado';
+      default:
+        return estado ?? '-';
     }
   }
 
-  estadoLabel(estado?: string): string {
+  badgeClass(estado?: string) {
     switch (estado) {
-      case 'pendiente': return 'Pendiente';
-      case 'en_progreso': return 'En progreso';
-      case 'finalizado': return 'Finalizado';
-      case 'cancelado': return 'Cancelado';
-      default: return '';
+      case 'finalizado':
+        return 'badge ok';
+      case 'en_progreso':
+        return 'badge warn';
+      case 'cancelado':
+        return 'badge bad';
+      default:
+        return 'badge';
     }
   }
 
-  // Helpers para template estricto (evita $event.target.value)
-  onEstadoChange(r: RequisitoProceso, value: string): void {
-    this.setEstado(r, value);
+  // === Requisitos ===
+  agregarRapido() {
+    if (this.nuevoReqForm.invalid) return;
+
+    const descripcion = String(this.nuevoReqForm.value.descripcion || '').trim();
+    if (!descripcion) return;
+
+    // orden incremental automático: último orden + 1
+    const maxOrden = this.requisitos.reduce((m, r) => Math.max(m, r.orden ?? 0), 0);
+
+    this.requisitosService.crear(this.id, {
+      orden: maxOrden + 1,
+      descripcion,
+      aplica: true,
+      estado: 'pendiente',
+    }).subscribe({
+      next: (nuevo) => {
+        this.requisitos = [...this.requisitos, nuevo].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+        this.nuevoReqForm.reset({ descripcion: '' });
+        this.recalcularAvance();
+      },
+      error: (e) => {
+        this.error = 'No se pudo agregar el requisito.';
+        console.error(e);
+      },
+    });
   }
 
-  onAplicaChange(r: RequisitoProceso, checked: boolean): void {
-    this.toggleAplica(r, checked);
+  onAplicaChange(r: RequisitoProceso, checked: boolean) {
+    this.requisitosService.actualizar(r.id, { aplica: checked }).subscribe({
+      next: (upd) => {
+        this.requisitos = this.requisitos.map((x) => (x.id === upd.id ? upd : x));
+        this.recalcularAvance();
+      },
+      error: (e) => console.error(e),
+    });
+  }
+
+  onEstadoChange(r: RequisitoProceso, estado: EstadoRequisito) {
+    this.requisitosService.actualizar(r.id, { estado }).subscribe({
+      next: (upd) => {
+        this.requisitos = this.requisitos.map((x) => (x.id === upd.id ? upd : x));
+        this.recalcularAvance();
+      },
+      error: (e) => console.error(e),
+    });
+  }
+
+  guardarTexto(r: RequisitoProceso, responsableTexto: string, observaciones: string) {
+    this.requisitosService.actualizar(r.id, { responsableTexto, observaciones }).subscribe({
+      next: (upd) => {
+        this.requisitos = this.requisitos.map((x) => (x.id === upd.id ? upd : x));
+      },
+      error: (e) => console.error(e),
+    });
+  }
+
+  eliminarReq(r: RequisitoProceso) {
+    if (!confirm('¿Eliminar este requisito?')) return;
+    this.requisitosService.eliminar(r.id).subscribe({
+      next: () => {
+        this.requisitos = this.requisitos.filter((x) => x.id !== r.id);
+        this.recalcularAvance();
+      },
+      error: (e) => console.error(e),
+    });
+  }
+
+  // === Plantillas ===
+  aplicarPlantilla() {
+    const codigo = (this.plantillaSeleccionada || '').trim();
+    if (!codigo) return;
+
+    // OJO: acá corregimos la firma: si tu service espera string, mandamos string.
+    this.plantillasService.applyToProceso(this.id, codigo).subscribe({
+      next: () => this.cargarRequisitos(),
+      error: (e) => {
+        this.error = 'No se pudo aplicar la plantilla.';
+        console.error(e);
+      },
+    });
   }
 }

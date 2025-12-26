@@ -7,16 +7,15 @@
   <div *ngIf="cargando">Cargando...</div>
   <div *ngIf="error" class="error">{{ error }}</div>
 
-  <div *ngIf="!cargando && proceso" class="card">
-    <div class="hdr">
-      <div class="title">
+  <div class="card" *ngIf="!cargando && proceso">
+    <div class="head">
+      <div>
         <h3>{{ proceso.nombre }}</h3>
-
         <div class="meta">
           <span *ngIf="proceso.numeroExpediente"><strong>Expte:</strong> {{ proceso.numeroExpediente }}</span>
           <span *ngIf="proceso.tipoActo"> · <strong>Tipo:</strong> {{ proceso.tipoActo }}</span>
           <span *ngIf="caso"> · <strong>Caso:</strong> {{ caso }}</span>
-          <span [class]="badgeClass(proceso.estado)"> {{ estadoLabel(proceso.estado) }} </span>
+          <span [class]="badgeClass(proceso.estado)">{{ estadoLabel(proceso.estado) }}</span>
         </div>
       </div>
 
@@ -27,100 +26,99 @@
     </div>
 
     <div class="block" *ngIf="situacionActual">
-      <h4>Situación actual</h4>
-      <p class="muted one-line">{{ situacionActual }}</p>
+      <div class="label">Situación actual</div>
+      <div class="text">{{ situacionActual }}</div>
     </div>
 
     <div class="block" *ngIf="puntosPrincipales">
-      <h4>Puntos principales</h4>
-      <p class="muted">{{ puntosPrincipales }}</p>
+      <div class="label">Puntos principales</div>
+      <div class="text small">{{ puntosPrincipales }}</div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="hdr2">
+  <div class="card" *ngIf="!cargando && proceso">
+    <div class="row between">
       <h3>Requisitos</h3>
 
-      <form [formGroup]="nuevoReqForm" (ngSubmit)="crearRequisito()" class="new-req">
+      <div class="tools">
+        <select class="input sm" #psel (change)="plantillaSeleccionada = psel.value">
+          <option value="">Aplicar plantilla...</option>
+          <option *ngFor="let p of plantillas" [value]="p.codigo">{{ p.nombre }}</option>
+        </select>
+        <button class="btn sm" type="button" (click)="aplicarPlantilla()" [disabled]="!plantillaSeleccionada">
+          Aplicar
+        </button>
+      </div>
+    </div>
+
+    <div class="row add">
+      <form [formGroup]="nuevoReqForm" (ngSubmit)="agregarRapido()" class="inline">
         <input class="input" formControlName="descripcion" placeholder="Nuevo requisito (descripción)" />
         <button class="btn primary" type="submit" [disabled]="nuevoReqForm.invalid">Agregar</button>
       </form>
     </div>
 
-    <div *ngIf="cargandoReq">Cargando requisitos...</div>
-    <div *ngIf="errorReq" class="error">{{ errorReq }}</div>
+    <div class="tablewrap">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th style="width: 48px;">#</th>
+            <th>Requisito / Documento</th>
+            <th style="width: 90px;">Aplica</th>
+            <th style="width: 140px;">Estado</th>
+            <th style="width: 180px;">Responsable</th>
+            <th style="width: 220px;">Observaciones</th>
+            <th style="width: 110px;"></th>
+          </tr>
+        </thead>
 
-    <table class="tabla" *ngIf="!cargandoReq && requisitos.length">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Requisito / Documento</th>
-          <th>Aplica</th>
-          <th>Estado</th>
-          <th>Responsable</th>
-          <th>Observaciones</th>
-          <th></th>
-        </tr>
-      </thead>
+        <tbody>
+          <tr *ngFor="let r of requisitos">
+            <td>{{ r.orden }}</td>
 
-      <tbody>
-  <tr *ngFor="let r of requisitos">
-    <td class="num">{{ r.orden }}</td>
-    <td class="desc">{{ r.descripcion }}</td>
+            <td class="desc">{{ r.descripcion }}</td>
 
-    <td class="center">
-      <input
-        #chk
-        type="checkbox"
-        [checked]="r.aplica"
-        (change)="onAplicaChange(r, chk.checked)"
-      />
-    </td>
+            <td>
+              <input
+                type="checkbox"
+                [checked]="r.aplica !== false"
+                (change)="onAplicaChange(r, pselAplica.checked)"
+                #pselAplica
+              />
+            </td>
 
-    <td>
-      <select
-        #sel
-        class="input sm"
-        [value]="r.estado"
-        (change)="onEstadoChange(r, sel.value)"
-      >
-        <option value="pendiente">Pendiente</option>
-        <option value="en_gestion">En gestión</option>
-        <option value="completo">Completo</option>
-        <option value="no_aplica">No aplica</option>
-      </select>
-    </td>
+            <td>
+              <select class="input sm"
+                      [value]="r.estado"
+                      (change)="onEstadoChange(r, ($any($event.target).value))">
+                <option *ngFor="let e of estados" [value]="e.value">{{ e.label }}</option>
+              </select>
+            </td>
 
-    <td>
-      <input
-        #resp
-        class="input sm"
-        [value]="r.responsableTexto || ''"
-        (blur)="guardarTexto(r, resp.value, (r.observaciones || ''))"
-        placeholder="Responsable"
-      />
-    </td>
+            <td>
+              <input class="input sm"
+                     [value]="r.responsableTexto || ''"
+                     (blur)="guardarTexto(r, ($any($event.target).value), r.observaciones || '')"
+                     placeholder="Responsable" />
+            </td>
 
-    <td>
-      <input
-        #obs
-        class="input sm"
-        [value]="r.observaciones || ''"
-        (blur)="guardarTexto(r, (r.responsableTexto || ''), obs.value)"
-        placeholder="Obs."
-      />
-    </td>
+            <td>
+              <input class="input sm"
+                     [value]="r.observaciones || ''"
+                     (blur)="guardarTexto(r, r.responsableTexto || '', ($any($event.target).value))"
+                     placeholder="Obs." />
+            </td>
 
-    <td class="actions">
-      <button class="btn danger sm" (click)="eliminarRequisito(r)">Eliminar</button>
-    </td>
-  </tr>
-</tbody>
+            <td>
+              <button class="btn danger sm" type="button" (click)="eliminarReq(r)">Eliminar</button>
+            </td>
+          </tr>
 
-    </table>
-
-    <div class="muted" *ngIf="!cargandoReq && !requisitos.length">
-      Sin requisitos cargados todavía.
+          <tr *ngIf="!requisitos.length">
+            <td colspan="7" class="muted">Sin requisitos aún.</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

@@ -1,22 +1,138 @@
 .wrap {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 24px 16px;
+}
+
+h2 {
+  margin: 8px 0 18px;
 }
 
 .card {
   background: #fff;
-  border-radius: 6px;
-  padding: 16px 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.03);
+  margin-bottom: 16px;
 }
 
-/* HEADER */
-.header {
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 14px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row.full {
+  grid-column: 1 / -1;
+}
+
+label {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.input {
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid #d8d8d8;
+}
+
+textarea.input {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #d0d0d0;
+  background: #f7f7f7;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #2f5cf3;
+  border-color: #2f5cf3;
+  color: #fff;
+}
+
+.btn.danger {
+  background: #d62c2c;
+  border-color: #d62c2c;
+  color: #fff;
+}
+
+.checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 8px 0 2px;
+}
+
+.lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 12px;
-  margin-bottom: 16px;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+
+.info strong {
+  font-size: 16px;
+}
+
+.meta {
+  color: #555;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.chips {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background: #f1f3ff;
+  color: #2f5cf3;
+  border: 1px solid #dfe5ff;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.inline-edit {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.inline-edit .input.sm {
+  padding: 7px 8px;
+  border-radius: 10px;
+}
+
+.error {
+  color: #b00020;
+  margin: 10px 0;
 }
